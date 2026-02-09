@@ -278,65 +278,50 @@ h1 {
     max-width: 900px;
 }
 
-.zodiac-option {
+
+/* FIX: CSS cho zodiac buttons */
+
+.zodiac-btn {
     background: white;
     border-radius: 15px;
-    padding: 1.2rem 0.5rem;
+    padding: 1.5rem 0.8rem;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
     text-align: center;
     cursor: pointer;
     border: 3px solid transparent;
-    min-height: 130px;
+    min-height: 140px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    font-size: 2.8rem;
+    color: var(--dark-red);
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
+    line-height: 1;
+    margin: 0;
+    border: none;
+    outline: none;
 }
 
-.zodiac-option:hover {
+.zodiac-btn:hover {
     transform: translateY(-10px) scale(1.05);
     box-shadow: 0 15px 30px rgba(196, 30, 58, 0.15);
 }
 
-.zodiac-option.active {
+.zodiac-btn.active {
     border-color: var(--primary-red);
     background: linear-gradient(135deg, #fffacd, #ffecb3);
     transform: translateY(-5px);
     box-shadow: 0 10px 25px rgba(196, 30, 58, 0.3);
 }
 
-.zodiac-option-icon {
-    font-size: 2.5rem;
-    margin-bottom: 0.6rem;
-    color: var(--dark-red);
-    transition: all 0.3s ease;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
-    line-height: 1;
-}
-
-.zodiac-option:hover .zodiac-option-icon {
-    transform: scale(1.2);
-}
-
-.zodiac-option-name {
-    font-size: 1.3rem;
+.zodiac-btn span {
+    font-size: 1.5rem;
     color: var(--dark-red);
     font-weight: bold;
-    margin-bottom: 0.3rem;
-}
-
-.zodiac-option-year {
-    font-size: 0.8rem;
-    color: #666;
-    line-height: 1.2;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    margin-top: 0.8rem;
+    display: block;
 }
 
 
@@ -345,16 +330,12 @@ h1 {
 .zodiac-result {
     background: white;
     border-radius: 20px;
-    padding: 3rem;
+    padding: 2rem;
     margin-top: 3rem;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     border: 2px solid var(--gold);
-    display: none;
-    animation: fadeIn 0.8s ease;
-}
-
-.zodiac-result.active {
     display: block;
+    animation: fadeIn 0.8s ease;
 }
 
 @keyframes fadeIn {
@@ -368,87 +349,76 @@ h1 {
     }
 }
 
-.zodiac-result-header {
+
+/* FIX: CSS cho nội dung tử vi */
+
+.zodiac-result-content {
+    padding: 1rem;
+}
+
+.zodiac-result-header h3 {
+    font-size: 2rem;
+    color: var(--dark-red);
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.zodiac-years {
+    color: #666;
+    font-style: italic;
+    margin-bottom: 2rem;
+    text-align: center;
+    display: block;
+}
+
+.zodiac-prediction h4,
+.zodiac-luck h4,
+.zodiac-advice h4 {
+    color: var(--dark-red);
+    margin: 1.5rem 0 1rem;
+    font-size: 1.5rem;
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 0.5rem;
+}
+
+.luck-items {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.luck-item {
+    background: #f8f8f8;
+    padding: 1rem;
+    border-radius: 10px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 2rem;
-    margin-bottom: 2.5rem;
-    flex-wrap: wrap;
-}
-
-.result-icon {
-    font-size: 5rem;
-    color: var(--primary-red);
-    line-height: 1;
-    font-family: "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
-}
-
-.result-title {
-    font-size: 2.5rem;
-    color: var(--dark-red);
-    text-align: center;
-}
-
-.result-badge {
-    background: linear-gradient(45deg, var(--primary-red), var(--dark-red));
-    color: white;
-    padding: 0.5rem 1.5rem;
-    border-radius: 30px;
-    font-weight: bold;
-    font-size: 1.2rem;
-    text-align: center;
-}
-
-.zodiac-details {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
-}
-
-.detail-card {
-    background: #f9f9f9;
-    border-radius: 15px;
-    padding: 2rem;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-}
-
-.detail-title {
-    font-size: 1.5rem;
-    color: var(--dark-red);
-    margin-bottom: 1.2rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--gold);
-}
-
-.lucky-items {
-    display: flex;
-    flex-wrap: wrap;
     gap: 1rem;
-    margin-top: 1rem;
 }
 
-.lucky-item {
-    background: var(--light-gold);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-weight: bold;
-    font-size: 0.9rem;
+.luck-item.very-lucky {
+    background: linear-gradient(135deg, #ffebee, #ffcdd2);
+    border-left: 4px solid var(--primary-red);
 }
 
-.prediction-text {
+.luck-item.lucky {
+    background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+    border-left: 4px solid #9c27b0;
+}
+
+.luck-item.normal {
+    background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+    border-left: 4px solid #4caf50;
+}
+
+.zodiac-advice p {
+    background: #fff8e1;
+    padding: 1.5rem;
+    border-radius: 10px;
+    border-left: 4px solid #ffb300;
     font-size: 1.1rem;
-    line-height: 1.7;
-    color: #444;
-}
-
-.highlight {
-    background: linear-gradient(120deg, #ffd70022, #ffd70044);
-    padding: 0.2rem 0.5rem;
-    border-radius: 5px;
-    font-weight: bold;
-    color: var(--dark-red);
+    line-height: 1.6;
 }
 
 .lucky-color {
@@ -855,21 +825,16 @@ footer {
     .zodiac-selector {
         grid-template-columns: repeat(4, 1fr);
     }
-    .zodiac-option {
+    .zodiac-btn {
         padding: 1rem 0.3rem;
         min-height: 120px;
-    }
-    .zodiac-option-icon {
         font-size: 2rem;
     }
-    .zodiac-option-name {
+    .zodiac-btn span {
         font-size: 1.1rem;
     }
-    .zodiac-option-year {
-        font-size: 0.75rem;
-    }
-    .new-year-grid {
-        grid-template-columns: 1fr;
+    .luck-items {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -899,15 +864,18 @@ footer {
     .zodiac-selector {
         grid-template-columns: repeat(3, 1fr);
     }
-    .zodiac-result-header {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    .zodiac-option {
+    .zodiac-btn {
         min-height: 110px;
+        font-size: 1.8rem;
     }
-    .result-icon {
-        font-size: 4rem;
+    .zodiac-btn span {
+        font-size: 1rem;
+    }
+    .luck-items {
+        grid-template-columns: 1fr;
+    }
+    .new-year-grid {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -944,26 +912,33 @@ footer {
         grid-template-columns: repeat(2, 1fr);
         gap: 0.8rem;
     }
+    .zodiac-btn {
+        min-height: 100px;
+        padding: 0.8rem 0.3rem;
+        font-size: 1.8rem;
+    }
+    .zodiac-btn span {
+        font-size: 1rem;
+    }
     .zodiac-result {
         padding: 2rem 1rem;
     }
-    .result-title {
-        font-size: 2rem;
+    .zodiac-result-header h3 {
+        font-size: 1.5rem;
     }
-    .result-icon {
-        font-size: 3.5rem;
-    }
-    .zodiac-option {
-        min-height: 100px;
-        padding: 0.8rem 0.3rem;
-    }
-    .zodiac-option-icon {
-        font-size: 1.8rem;
-    }
-    .zodiac-option-name {
-        font-size: 1rem;
-    }
-    .zodiac-option-year {
-        font-size: 0.7rem;
-    }
+}
+
+
+/* Loading cho tử vi */
+
+.zodiac-loading {
+    text-align: center;
+    padding: 3rem;
+    color: var(--dark-red);
+}
+
+.zodiac-loading .fa-spinner {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--primary-red);
 }

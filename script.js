@@ -274,7 +274,7 @@ function initZodiacHoroscope() {
             prediction: 'Năm cực kỳ tốt cho Thìn. Thăng tiến vượt bậc trong sự nghiệp, tài lộc dồi dào. Mọi việc đều thuận lợi.'
         },
         {
-            id: 'ty',
+            id: 'ti', // FIXED: Đã sửa từ 'ty' thành 'ti'
             name: 'Tỵ',
             icon: '🐍',
             years: [1941, 1953, 1965, 1977, 1989, 2001, 2013, 2025],
@@ -366,11 +366,21 @@ function displayZodiacPrediction(zodiac) {
     const zodiacResult = document.getElementById('zodiacResult');
     if (!zodiacResult) return;
 
+    // Hiển thị loading
     zodiacResult.innerHTML = `
+    <div class="zodiac-loading">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Đang xem tử vi cho tuổi ${zodiac.name}...</p>
+    </div>
+  `;
+
+    // Hiển thị kết quả sau 300ms để tạo hiệu ứng
+    setTimeout(() => {
+        zodiacResult.innerHTML = `
     <div class="zodiac-result-content">
       <div class="zodiac-result-header">
         <h3>${zodiac.icon} Tử vi tuổi ${zodiac.name} năm Bính Ngọ 2026</h3>
-        <p class="zodiac-years">Các năm sinh: ${zodiac.years.join(', ')}</p>
+        <span class="zodiac-years">Các năm sinh: ${zodiac.years.join(', ')}</span>
       </div>
       <div class="zodiac-prediction">
         <h4>Dự đoán:</h4>
@@ -403,6 +413,7 @@ function displayZodiacPrediction(zodiac) {
       </div>
     </div>
   `;
+    }, 300);
 }
 
 function getZodiacAdvice(zodiacId) {
@@ -412,7 +423,7 @@ function getZodiacAdvice(zodiacId) {
         'dan': 'Năm nhiều cơ hội, nên mạnh dạn đầu tư. Cần chú ý đến các mối quan hệ xã hội.',
         'mao': 'Nên ổn định và kiên nhẫn. Tránh thay đổi công việc đột ngột.',
         'thin': 'Năm cực kỳ thuận lợi, nên tận dụng tối đa cơ hội. Có thể đầu tư mạnh tay.',
-        'ty': 'Cần thận trọng trong mọi quyết định. Nên tập trung vào việc học hỏi và tích lũy kinh nghiệm.',
+        'ti': 'Cần thận trọng trong mọi quyết định. Nên tập trung vào việc học hỏi và tích lũy kinh nghiệm.',
         'ngo': 'Năm bản mệnh, mọi việc đều thuận lợi. Nên mở rộng kinh doanh và phát triển sự nghiệp.',
         'mui': 'Nên duy trì sự ổn định hiện tại. Có thể học thêm kỹ năng mới để phát triển bản thân.',
         'than': 'Cần kiên nhẫn vượt qua thử thách. Nên tập trung vào mục tiêu dài hạn.',

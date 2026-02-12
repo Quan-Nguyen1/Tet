@@ -3,20 +3,16 @@ document.addEventListener("DOMContentLoaded", function() {
     console.log("🎯 Website Tết Bính Ngọ 2026 đã được tải thành công!");
     console.log("📅 Thời điểm Tết: 00:00 ngày 17/02/2026 (GMT+7)");
     console.log("🔧 Để test nhanh, gọi hàm testTetArrival() trong console");
+    console.log("🎵 Để test nhạc, gọi hàm testTetMusic() trong console");
+
+    // Ẩn toàn bộ nội dung chính, chỉ hiện countdown lúc đầu
+    hideAllContentExceptCountdown();
 
     // Bắt đầu đếm ngược
     startCountdown();
 
-    // Khởi tạo tương tác
-    initInteractions();
-
     // Khởi tạo tử vi 12 con giáp
     initZodiacHoroscope();
-
-    // Tạo pháo hoa chào mừng
-    setTimeout(() => {
-        createFireworks(3);
-    }, 1000);
 
     // Khởi tạo scroll
     initScroll();
@@ -24,109 +20,80 @@ document.addEventListener("DOMContentLoaded", function() {
     // Thêm CSS animations động
     addDynamicCSS();
 
-    // TEST: Để test nhanh, bạn có thể uncomment dòng dưới đây
-    // testTetArrival();
+    // Tiền tải nhạc nền (không phát)
+    preloadMusic();
 });
 
 // ========== BIẾN TOÀN CỤC ==========
 let isTetArrived = false;
 let fireworksInterval;
 let confettiInterval;
+let tetMusic = null;
+let isMusicPlaying = false;
+let audioContext = null;
 
-// ========== THÊM CSS ĐỘNG ==========
-function addDynamicCSS() {
-    const style = document.createElement('style');
-    style.textContent = `
-    @keyframes rainbowBackground {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+// ========== TIỀN TẢI NHẠC NỀN ==========
+function preloadMusic() {
+    try {
+        tetMusic = new Audio();
+        tetMusic.src = 'tet-music.mp3'; // Tên file MP3 của bạn
+        tetMusic.loop = true;
+        tetMusic.volume = 0.5;
+        tetMusic.load(); // Tiền tải nhạc
+        console.log("🎵 Đã tiền tải nhạc Tết thành công!");
+    } catch (error) {
+        console.error("❌ Không thể tải nhạc Tết:", error);
     }
-    
-    @keyframes confettiFall {
-      0% {
-        transform: translateY(-100px) rotate(0deg);
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(100vh) rotate(360deg);
-        opacity: 0;
-      }
-    }
-    
-    .confetti {
-      position: fixed;
-      top: 0;
-      z-index: 9999;
-      pointer-events: none;
-      border-radius: 2px;
-    }
-    
-    .firework {
-      position: fixed;
-      pointer-events: none;
-      border-radius: 50%;
-      z-index: 9998;
-      box-shadow: 0 0 10px currentColor;
-    }
-    
-    .new-year-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1rem;
-      margin: 2rem 0;
-    }
-    
-    .new-year-item {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 1rem;
-      border-radius: 10px;
-      text-align: center;
-      font-size: 1.2rem;
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(255, 215, 0, 0.3);
-    }
-    
-    .scroll-top {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      width: 50px;
-      height: 50px;
-      background: #c41e3a;
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      opacity: 0;
-      transform: translateY(100px);
-      transition: all 0.3s ease;
-      z-index: 1000;
-      box-shadow: 0 4px 15px rgba(196, 30, 58, 0.3);
-    }
-    
-    .scroll-top.active {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    
-    .scroll-top:hover {
-      background: #ff4500;
-      transform: scale(1.1);
-    }
-  `;
-    document.head.appendChild(style);
 }
 
-// ========== HÀM TEST TẾT ĐẾN ==========
-function testTetArrival() {
-    console.log("⚠️ ĐANG TEST CHẾ ĐỘ TẾT ĐẾN ⚠️");
-    // Sửa ngày Tết thành 10 giây sau để test
-    window.testTetDate = new Date();
-    window.testTetDate.setSeconds(window.testTetDate.getSeconds() + 10);
-    console.log("Tết sẽ đến lúc:", window.testTetDate.toLocaleString());
+// ========== ẨN TẤT CẢ NỘI DUNG NGOẠI TRỪ COUNTDOWN ==========
+function hideAllContentExceptCountdown() {
+    // Ẩn header, hero, footer, scroll-top
+    const header = document.querySelector('header');
+    const hero = document.querySelector('.hero');
+    const footer = document.querySelector('footer');
+    const scrollTop = document.getElementById('scrollTop');
+
+    if (header) header.classList.add('hidden');
+    if (hero) hero.classList.add('hidden');
+    if (footer) footer.classList.add('hidden');
+    if (scrollTop) scrollTop.classList.add('hidden');
+
+    // Trong container, chỉ giữ countdown, ẩn hết phần còn lại
+    const container = document.querySelector('.container');
+    if (container) {
+        const countdown = container.querySelector('.countdown');
+        Array.from(container.children).forEach(child => {
+            if (child !== countdown) {
+                child.classList.add('hidden');
+            }
+        });
+    }
+}
+
+// ========== HIỂN THỊ TOÀN BỘ NỘI DUNG KHI TẾT ĐẾN ==========
+function showAllContent() {
+    // Hiển thị header, hero, footer, scroll-top
+    const header = document.querySelector('header');
+    const hero = document.querySelector('.hero');
+    const footer = document.querySelector('footer');
+    const scrollTop = document.getElementById('scrollTop');
+
+    if (header) header.classList.remove('hidden');
+    if (hero) hero.classList.remove('hidden');
+    if (footer) footer.classList.remove('hidden');
+    if (scrollTop) scrollTop.classList.remove('hidden');
+
+    // Hiển thị tất cả nội dung trong container
+    const container = document.querySelector('.container');
+    if (container) {
+        Array.from(container.children).forEach(child => {
+            child.classList.remove('hidden');
+        });
+    }
+
+    // Khởi tạo lại các tương tác sau khi hiển thị nội dung
+    initInteractions();
 }
 
 // ========== BỘ ĐẾM NGƯỢC ==========
@@ -147,93 +114,300 @@ function updateCountdown() {
         console.log("🎉 TẾT ĐÃ ĐẾN! 🎉");
         isTetArrived = true;
 
-        // Cập nhật hiển thị đếm ngược
-        document.getElementById("days").textContent = "00";
-        document.getElementById("hours").textContent = "00";
-        document.getElementById("minutes").textContent = "00";
-        document.getElementById("seconds").textContent = "00";
+        // 1. Ẩn countdown
+        const countdown = document.querySelector('.countdown');
+        if (countdown) countdown.classList.add('hidden');
 
-        // HIỂN THỊ THÔNG BÁO TẾT ĐÃ ĐẾN
-        const countdownTitle = document.querySelector(".countdown-title");
-        if (countdownTitle) {
-            countdownTitle.innerHTML =
-                '🎉 <span style="color:#ffd700; font-size:3rem; text-shadow: 0 0 20px #ff0000;">CHÚC MỪNG NĂM MỚI BÍNH NGỌ 2026!</span> 🎉';
-        }
+        // 2. Hiển thị toàn bộ nội dung trang
+        showAllContent();
 
-        // Tạo thông báo Tết đặc biệt
-        const newYearMessage = document.createElement("div");
-        newYearMessage.className = "new-year-message";
-        newYearMessage.innerHTML = `
-      <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">🎊 XUÂN BÍNH NGỌ ĐÃ VỀ! 🎊</h2>
-      <p style="font-size: 1.5rem; margin-bottom: 1rem;">
-        Giao thừa đã điểm! Chúc mọi người một năm mới:
-      </p>
-      <div class="new-year-grid">
-        <div class="new-year-item">
-          🐎 <strong>Năm Ngọ Thịnh Vượng</strong>
-        </div>
-        <div class="new-year-item">
-          💰 <strong>Phát Tài Phát Lộc</strong>
-        </div>
-        <div class="new-year-item">
-          🏡 <strong>Gia Đình An Khang</strong>
-        </div>
-        <div class="new-year-item">
-          💖 <strong>Tình Duyên Viên Mãn</strong>
-        </div>
-      </div>
-      <p style="font-size: 1.2rem; font-style: italic; margin-top: 1rem;">
-        "Xuân sang trăm hoa đua nở, Năm mới vạn sự như ý"
-      </p>
-    `;
-
-        // Thêm thông báo vào countdown
-        const countdown = document.querySelector(".countdown");
-        if (countdown) {
-            countdown.appendChild(newYearMessage);
-            countdown.style.background = "linear-gradient(135deg, #ff0000, #ff4500, #ffd700)";
-            countdown.style.animation = "rainbowBackground 3s infinite alternate";
-            countdown.style.backgroundSize = "400% 400%";
-        }
-
-        // Thêm hiệu ứng pháo hoa liên tục
-        startContinuousFireworks();
-
-        // Tạo confetti
-        createConfetti();
-
-        // Phát âm thanh chúc mừng
-        playNewYearSound();
-
-        // Thay đổi tiêu đề trang
+        // 3. Cập nhật tiêu đề trang
         document.title = "🎉 Chúc Mừng Năm Mới Bính Ngọ 2026! 🎉";
 
-        // Thêm hiệu ứng cho toàn bộ page
+        // 4. Pháo hoa rầm rộ
+        for (let i = 0; i < 30; i++) {
+            setTimeout(() => {
+                createFirework();
+            }, i * 70);
+        }
+
+        for (let i = 0; i < 20; i++) {
+            setTimeout(() => {
+                createFirework(
+                    window.innerWidth / 2 + (Math.random() - 0.5) * 200,
+                    window.innerHeight / 3 + (Math.random() - 0.5) * 150,
+                    getRandomColor()
+                );
+            }, 500 + i * 100);
+        }
+
+        // 5. Pháo hoa liên tục
+        startContinuousFireworks();
+
+        // 6. Tạo confetti
+        createConfetti();
+
+        // 7. PHÁT NHẠC TẾT
+        playTetMusic();
+
+        // 8. Thêm hiệu ứng cho toàn bộ page
         document.body.style.animation = "rainbowBackground 10s infinite";
         document.body.style.backgroundSize = "400% 400%";
+
+        // 9. Thêm thông báo Tết
+        addNewYearNotification();
 
         return;
     }
 
     const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-    const hours = Math.floor(
-        (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
-    );
+    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-    document.getElementById("days").textContent = days
-        .toString()
-        .padStart(2, "0");
-    document.getElementById("hours").textContent = hours
-        .toString()
-        .padStart(2, "0");
-    document.getElementById("minutes").textContent = minutes
-        .toString()
-        .padStart(2, "0");
-    document.getElementById("seconds").textContent = seconds
-        .toString()
-        .padStart(2, "0");
+    document.getElementById("days").textContent = days.toString().padStart(2, "0");
+    document.getElementById("hours").textContent = hours.toString().padStart(2, "0");
+    document.getElementById("minutes").textContent = minutes.toString().padStart(2, "0");
+    document.getElementById("seconds").textContent = seconds.toString().padStart(2, "0");
+}
+
+// ========== TIỀN TẢI NHẠC NỀN ==========
+function preloadMusic() {
+    try {
+        // Danh sách các tên file MP3 có thể có - ƯU TIÊN music.mp3
+        const possibleMusicFiles = [
+            'music.mp3', // Tên file của bạn
+            'tet-music.mp3',
+            'nhac-tet.mp3',
+            'happy-new-year.mp3',
+            'tet.mp3',
+            'audio/music.mp3',
+            'assets/music.mp3'
+        ];
+
+        tetMusic = new Audio();
+        let fileLoaded = false;
+
+        console.log("🎵 Đang tìm file nhạc: music.mp3");
+
+        // Thử từng file cho đến khi tìm thấy
+        possibleMusicFiles.forEach(file => {
+            if (!fileLoaded) {
+                const audio = new Audio();
+                audio.src = file;
+
+                audio.addEventListener('canplaythrough', function() {
+                    if (!fileLoaded) {
+                        fileLoaded = true;
+                        tetMusic.src = file;
+                        tetMusic.loop = true;
+                        tetMusic.volume = 0.3; // Âm lượng 30%
+                        console.log(`🎵 ĐÃ TÌM THẤY NHẠC: ${file}`);
+                        console.log(`✅ Sẵn sàng phát nhạc Tết từ file: ${file}`);
+
+                        // Hiển thị thông báo tìm thấy nhạc
+                        showMusicNotification(`🎵 Đã tải: ${file}`);
+                    }
+                }, { once: true });
+
+                audio.addEventListener('error', function() {
+                    console.log(`❌ Không tìm thấy: ${file}`);
+                });
+
+                audio.load();
+            }
+        });
+
+        // Nếu không tìm thấy file nào, tạo nhạc ảo
+        // setTimeout(() => {
+        //     if (!tetMusic.src) {
+        //         console.log("❌ KHÔNG TÌM THẤY FILE MUSIC.MP3");
+        //         console.log("📁 Vui lòng đặt file music.mp3 cùng thư mục với index.html");
+        //         console.log("🎵 Sử dụng nhạc ảo từ Web Audio API");
+        //         createVirtualMusic();
+        //         showMusicHelp();
+        //     }
+        // }, 1500);
+
+    } catch (error) {
+        console.error("❌ Lỗi tải nhạc:", error);
+        createVirtualMusic();
+        showMusicHelp();
+    }
+}
+
+// ========== PHÁT NHẠC TẾT ==========
+function playTetMusic() {
+    try {
+        if (!tetMusic) {
+            tetMusic = new Audio('music.mp3');
+            tetMusic.loop = true;
+            tetMusic.volume = 0.5;
+        }
+
+        // Reset nhạc về đầu
+        tetMusic.currentTime = 0;
+
+        // Phát nhạc
+        tetMusic.play()
+            .then(() => {
+                isMusicPlaying = true;
+                console.log("🎵 Đang phát nhạc Tết!");
+
+                // Cập nhật nút điều khiển nhạc nếu có
+                updateMusicButtonUI();
+            })
+            .catch(error => {
+                console.log("❌ Không thể phát nhạc tự động:", error);
+                console.log("ℹ️ Trình duyệt chặn autoplay. Click vào nút play để phát nhạc!");
+
+                // Tạo nút play nhạc thủ công
+                createMusicControlButton();
+            });
+    } catch (error) {
+        console.error("Lỗi phát nhạc:", error);
+        createMusicControlButton();
+    }
+}
+
+// ========== TẠO NÚT ĐIỀU KHIỂN NHẠC ==========
+function createMusicControlButton() {
+    // Kiểm tra nếu đã có nút thì không tạo lại
+    if (document.querySelector('.music-control')) return;
+
+    const musicBtn = document.createElement('div');
+    musicBtn.className = 'music-control';
+    musicBtn.innerHTML = `
+        <div class="music-btn" onclick="toggleMusic()">
+            <i class="fas fa-music"></i>
+            <span class="music-text">Bật nhạc Tết</span>
+        </div>
+    `;
+    document.body.appendChild(musicBtn);
+}
+
+// ========== CẬP NHẬT UI NÚT NHẠC ==========
+function updateMusicButtonUI() {
+    const musicBtn = document.querySelector('.music-btn');
+    if (musicBtn) {
+        if (isMusicPlaying) {
+            musicBtn.innerHTML = '<i class="fas fa-pause-circle"></i><span class="music-text">Tắt nhạc Tết</span>';
+            musicBtn.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
+        } else {
+            musicBtn.innerHTML = '<i class="fas fa-music"></i><span class="music-text">Bật nhạc Tết</span>';
+            musicBtn.style.background = 'linear-gradient(45deg, var(--primary-red), var(--dark-red))';
+        }
+    }
+}
+
+// ========== BẬT/TẮT NHẠC ==========
+function toggleMusic() {
+    if (!tetMusic) {
+        tetMusic = new Audio('tet-music.mp3');
+        tetMusic.loop = true;
+        tetMusic.volume = 0.3;
+    }
+
+    if (isMusicPlaying) {
+        tetMusic.pause();
+        isMusicPlaying = false;
+        console.log("⏸️ Đã tạm dừng nhạc Tết");
+    } else {
+        tetMusic.play()
+            .then(() => {
+                isMusicPlaying = true;
+                console.log("🎵 Tiếp tục phát nhạc Tết");
+            })
+            .catch(error => console.error("Lỗi phát nhạc:", error));
+    }
+
+    updateMusicButtonUI();
+}
+
+// ========== ĐIỀU CHỈNH ÂM LƯỢNG ==========
+function setMusicVolume(volume) {
+    if (tetMusic) {
+        tetMusic.volume = Math.max(0, Math.min(1, volume));
+        console.log(`🔊 Đã điều chỉnh âm lượng: ${Math.round(volume * 100)}%`);
+    }
+}
+
+// ========== DỪNG NHẠC ==========
+function stopTetMusic() {
+    if (tetMusic) {
+        tetMusic.pause();
+        tetMusic.currentTime = 0;
+        isMusicPlaying = false;
+        console.log("⏹️ Đã dừng nhạc Tết");
+    }
+}
+
+// ========== THÊM THÔNG BÁO TẾT ==========
+function addNewYearNotification() {
+    const hero = document.querySelector('.hero');
+    if (hero) {
+        const notification = document.createElement('div');
+        notification.className = 'new-year-message';
+        notification.innerHTML = `
+            <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">🎊 XUÂN BÍNH NGỌ ĐÃ VỀ! 🎊</h2>
+            <p style="font-size: 1.5rem; margin-bottom: 1rem;">
+                Giao thừa đã điểm! Chúc mọi người một năm mới:
+            </p>
+            <div class="new-year-grid">
+                <div class="new-year-item">🐎 <strong>Năm Ngọ Thịnh Vượng</strong></div>
+                <div class="new-year-item">💰 <strong>Phát Tài Phát Lộc</strong></div>
+                <div class="new-year-item">🏡 <strong>Gia Đình An Khang</strong></div>
+                <div class="new-year-item">💖 <strong>Tình Duyên Viên Mãn</strong></div>
+            </div>
+            <p style="font-size: 1.2rem; font-style: italic; margin-top: 1rem;">
+                "Xuân sang trăm hoa đua nở, Năm mới vạn sự như ý"
+            </p>
+        `;
+        hero.appendChild(notification);
+    }
+}
+
+// ========== PHÁO HOA LIÊN TỤC ==========
+function startContinuousFireworks() {
+    if (fireworksInterval) clearInterval(fireworksInterval);
+
+    fireworksInterval = setInterval(() => {
+        createFireworks(4);
+    }, 150);
+
+    setTimeout(() => {
+        clearInterval(fireworksInterval);
+        fireworksInterval = setInterval(() => {
+            createFireworks(2);
+        }, 400);
+    }, 30000);
+}
+
+// ========== TẠO CONFETTI ==========
+function createConfetti() {
+    if (confettiInterval) clearInterval(confettiInterval);
+    const colors = ["#c41e3a", "#ffd700", "#ff4500", "#32cd32", "#1e90ff", "#9370db", "#ff69b4", "#ff8c00"];
+
+    confettiInterval = setInterval(() => {
+        for (let i = 0; i < 30; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement("div");
+                confetti.className = "confetti";
+                confetti.style.left = Math.random() * 100 + "vw";
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = Math.random() * 15 + 5 + "px";
+                confetti.style.height = Math.random() * 15 + 5 + "px";
+                confetti.style.borderRadius = Math.random() > 0.5 ? "50%" : "0";
+                confetti.style.opacity = Math.random() * 0.8 + 0.2;
+                document.body.appendChild(confetti);
+                const animationDuration = Math.random() * 3 + 2;
+                confetti.style.animation = `confettiFall ${animationDuration}s linear forwards`;
+                setTimeout(() => {
+                    if (confetti.parentNode) confetti.remove();
+                }, animationDuration * 1000);
+            }, i * 30);
+        }
+    }, 1000);
 }
 
 // ========== TỬ VI 12 CON GIÁP ==========
@@ -274,7 +448,7 @@ function initZodiacHoroscope() {
             prediction: 'Năm cực kỳ tốt cho Thìn. Thăng tiến vượt bậc trong sự nghiệp, tài lộc dồi dào. Mọi việc đều thuận lợi.'
         },
         {
-            id: 'ti', // FIXED: Đã sửa từ 'ty' thành 'ti'
+            id: 'ti',
             name: 'Tỵ',
             icon: '🐍',
             years: [1941, 1953, 1965, 1977, 1989, 2001, 2013, 2025],
@@ -329,7 +503,6 @@ function initZodiacHoroscope() {
 
     if (!zodiacSelector || !zodiacResult) return;
 
-    // Tạo các nút con giáp
     zodiacData.forEach(zodiac => {
         const button = document.createElement('button');
         button.className = 'zodiac-btn';
@@ -338,81 +511,73 @@ function initZodiacHoroscope() {
         button.setAttribute('title', `Sinh năm: ${zodiac.years.join(', ')}`);
 
         button.addEventListener('click', () => {
-            // Xóa active class từ tất cả các nút
             document.querySelectorAll('.zodiac-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-
-            // Thêm active class cho nút được click
             button.classList.add('active');
-
-            // Hiển thị kết quả tử vi
             displayZodiacPrediction(zodiac);
         });
 
         zodiacSelector.appendChild(button);
     });
 
-    // Hiển thị tử vi mặc định cho Ngọ (năm hiện tại)
-    const currentZodiac = zodiacData.find(z => z.id === 'ngo');
-    if (currentZodiac) {
-        displayZodiacPrediction(currentZodiac);
-        const defaultBtn = document.querySelector('[data-zodiac="ngo"]');
-        if (defaultBtn) defaultBtn.classList.add('active');
-    }
+    // const currentZodiac = zodiacData.find(z => z.id === 'ngo');
+    // if (currentZodiac) {
+    //     displayZodiacPrediction(currentZodiac);
+    //     const defaultBtn = document.querySelector('[data-zodiac="ngo"]');
+    //     if (defaultBtn) defaultBtn.classList.add('active');
+    // }
 }
 
 function displayZodiacPrediction(zodiac) {
     const zodiacResult = document.getElementById('zodiacResult');
     if (!zodiacResult) return;
 
-    // Hiển thị loading
     zodiacResult.innerHTML = `
-    <div class="zodiac-loading">
-      <i class="fas fa-spinner fa-spin"></i>
-      <p>Đang xem tử vi cho tuổi ${zodiac.name}...</p>
-    </div>
-  `;
+        <div class="zodiac-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Đang xem tử vi cho tuổi ${zodiac.name}...</p>
+        </div>
+    `;
 
-    // Hiển thị kết quả sau 300ms để tạo hiệu ứng
     setTimeout(() => {
         zodiacResult.innerHTML = `
-    <div class="zodiac-result-content">
-      <div class="zodiac-result-header">
-        <h3>${zodiac.icon} Tử vi tuổi ${zodiac.name} năm Bính Ngọ 2026</h3>
-        <span class="zodiac-years">Các năm sinh: ${zodiac.years.join(', ')}</span>
-      </div>
-      <div class="zodiac-prediction">
-        <h4>Dự đoán:</h4>
-        <p>${zodiac.prediction}</p>
-      </div>
-      <div class="zodiac-luck">
-        <h4>Vận may:</h4>
-        <div class="luck-items">
-          <div class="luck-item ${zodiac.id === 'ngo' ? 'very-lucky' : 'normal'}">
-            <i class="fas ${zodiac.id === 'ngo' ? 'fa-star' : 'fa-chart-line'}"></i>
-            <span>Sự nghiệp: ${zodiac.id === 'ngo' ? 'Rất tốt' : 'Khá tốt'}</span>
-          </div>
-          <div class="luck-item ${zodiac.id === 'ngo' ? 'very-lucky' : 'normal'}">
-            <i class="fas ${zodiac.id === 'ngo' ? 'fa-money-bill-wave' : 'fa-coins'}"></i>
-            <span>Tài lộc: ${zodiac.id === 'ngo' ? 'Dồi dào' : 'Ổn định'}</span>
-          </div>
-          <div class="luck-item ${zodiac.id === 'ngo' ? 'lucky' : 'normal'}">
-            <i class="fas fa-heart"></i>
-            <span>Tình cảm: ${zodiac.id === 'ngo' ? 'Hạnh phúc' : 'Bình ổn'}</span>
-          </div>
-          <div class="luck-item ${zodiac.id === 'ngo' ? 'lucky' : 'normal'}">
-            <i class="fas fa-heartbeat"></i>
-            <span>Sức khỏe: ${zodiac.id === 'ngo' ? 'Tốt' : 'Bình thường'}</span>
-          </div>
-        </div>
-      </div>
-      <div class="zodiac-advice">
-        <h4>Lời khuyên:</h4>
-        <p>${getZodiacAdvice(zodiac.id)}</p>
-      </div>
-    </div>
-  `;
+            <div class="zodiac-result-content">
+                <div class="zodiac-result-header">
+                    <h3>${zodiac.icon} Tử vi tuổi ${zodiac.name} năm Bính Ngọ 2026</h3>
+                    <span class="zodiac-years">Các năm sinh: ${zodiac.years.join(', ')}</span>
+                </div>
+                <div class="zodiac-prediction">
+                    <h4>Dự đoán:</h4>
+                    <p>${zodiac.prediction}</p>
+                </div>
+                <div class="zodiac-luck">
+                    <h4>Vận may:</h4>
+                    <div class="luck-items">
+                        <div class="luck-item ${zodiac.id === 'ngo' ? 'very-lucky' : 'normal'}">
+                            <i class="fas ${zodiac.id === 'ngo' ? 'fa-star' : 'fa-chart-line'}"></i>
+                            <span>Sự nghiệp: ${zodiac.id === 'ngo' ? 'Rất tốt' : 'Khá tốt'}</span>
+                        </div>
+                        <div class="luck-item ${zodiac.id === 'ngo' ? 'very-lucky' : 'normal'}">
+                            <i class="fas ${zodiac.id === 'ngo' ? 'fa-money-bill-wave' : 'fa-coins'}"></i>
+                            <span>Tài lộc: ${zodiac.id === 'ngo' ? 'Dồi dào' : 'Ổn định'}</span>
+                        </div>
+                        <div class="luck-item ${zodiac.id === 'ngo' ? 'lucky' : 'normal'}">
+                            <i class="fas fa-heart"></i>
+                            <span>Tình cảm: ${zodiac.id === 'ngo' ? 'Hạnh phúc' : 'Bình ổn'}</span>
+                        </div>
+                        <div class="luck-item ${zodiac.id === 'ngo' ? 'lucky' : 'normal'}">
+                            <i class="fas fa-heartbeat"></i>
+                            <span>Sức khỏe: ${zodiac.id === 'ngo' ? 'Tốt' : 'Bình thường'}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="zodiac-advice">
+                    <h4>Lời khuyên:</h4>
+                    <p>${getZodiacAdvice(zodiac.id)}</p>
+                </div>
+            </div>
+        `;
     }, 300);
 }
 
@@ -431,155 +596,7 @@ function getZodiacAdvice(zodiacId) {
         'tuat': 'Nên duy trì nhịp độ công việc hiện tại. Có thể cân nhắc đầu tư nhỏ.',
         'hoi': 'Năm thuận lợi, nên mở rộng các mối quan hệ. Có thể đầu tư vào bất động sản.'
     };
-
     return advice[zodiacId] || 'Nên giữ vững tinh thần lạc quan, làm việc chăm chỉ và quan tâm đến gia đình.';
-}
-
-// ========== PHÁO HOA LIÊN TỤC ==========
-function startContinuousFireworks() {
-    if (fireworksInterval) clearInterval(fireworksInterval);
-
-    // Pháo hoa dày đặc trong 30 giây đầu
-    fireworksInterval = setInterval(() => {
-        createFireworks(5);
-    }, 300);
-
-    // Sau 30 giây, giảm tần suất
-    setTimeout(() => {
-        clearInterval(fireworksInterval);
-        fireworksInterval = setInterval(() => {
-            createFireworks(2);
-        }, 1500);
-    }, 30000);
-}
-
-// ========== TẠO CONFETTI ==========
-function createConfetti() {
-    if (confettiInterval) clearInterval(confettiInterval);
-
-    const colors = [
-        "#c41e3a",
-        "#ffd700",
-        "#ff4500",
-        "#32cd32",
-        "#1e90ff",
-        "#9370db",
-    ];
-    confettiInterval = setInterval(() => {
-        for (let i = 0; i < 20; i++) {
-            setTimeout(() => {
-                const confetti = document.createElement("div");
-                confetti.className = "confetti";
-                confetti.style.left = Math.random() * 100 + "vw";
-                confetti.style.backgroundColor =
-                    colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.width = Math.random() * 15 + 5 + "px";
-                confetti.style.height = Math.random() * 15 + 5 + "px";
-                confetti.style.opacity = "1";
-                confetti.style.borderRadius = Math.random() > 0.5 ? "50%" : "0";
-
-                document.body.appendChild(confetti);
-
-                const animationDuration = Math.random() * 3 + 2;
-                confetti.style.animation = `confettiFall ${animationDuration}s linear forwards`;
-
-                setTimeout(() => {
-                    if (confetti.parentNode) {
-                        confetti.remove();
-                    }
-                }, animationDuration * 1000);
-            }, i * 50);
-        }
-    }, 2000);
-}
-
-// ========== ÂM THANH CHÚC MỪNG ==========
-function playNewYearSound() {
-    try {
-        // Kiểm tra hỗ trợ Web Audio API
-        if (!window.AudioContext && !window.webkitAudioContext) {
-            console.log("Trình duyệt không hỗ trợ Web Audio API");
-            return;
-        }
-
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const audioContext = new AudioContext();
-
-        // Chỉ phát âm thanh khi người dùng đã tương tác với trang
-        if (audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
-
-        const notes = [261.63, 329.63, 392.0, 523.25]; // C4, E4, G4, C5
-
-        notes.forEach((freq, i) => {
-            setTimeout(() => {
-                try {
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-
-                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
-                    oscillator.type = "sine";
-
-                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                    gainNode.gain.linearRampToValueAtTime(
-                        0.3,
-                        audioContext.currentTime + 0.1,
-                    );
-                    gainNode.gain.exponentialRampToValueAtTime(
-                        0.01,
-                        audioContext.currentTime + 0.8,
-                    );
-
-                    oscillator.start();
-                    oscillator.stop(audioContext.currentTime + 0.8);
-                } catch (error) {
-                    console.log("Lỗi tạo âm thanh:", error);
-                }
-            }, i * 300);
-        });
-
-        // Âm thanh pháo hoa
-        setTimeout(() => {
-            for (let i = 0; i < 5; i++) {
-                setTimeout(() => {
-                    try {
-                        const oscillator = audioContext.createOscillator();
-                        const gainNode = audioContext.createGain();
-
-                        oscillator.connect(gainNode);
-                        gainNode.connect(audioContext.destination);
-
-                        oscillator.frequency.setValueAtTime(
-                            80 + Math.random() * 300,
-                            audioContext.currentTime,
-                        );
-                        oscillator.type = "sawtooth";
-
-                        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                        gainNode.gain.linearRampToValueAtTime(
-                            0.2,
-                            audioContext.currentTime + 0.05,
-                        );
-                        gainNode.gain.exponentialRampToValueAtTime(
-                            0.01,
-                            audioContext.currentTime + 0.4,
-                        );
-
-                        oscillator.start();
-                        oscillator.stop(audioContext.currentTime + 0.4);
-                    } catch (error) {
-                        console.log("Lỗi tạo âm thanh pháo hoa:", error);
-                    }
-                }, i * 200);
-            }
-        }, 1500);
-    } catch (error) {
-        console.log("Không thể phát âm thanh:", error);
-    }
 }
 
 // ========== LỜI CHÚC TẾT ==========
@@ -600,24 +617,18 @@ function initInteractions() {
     const wishText = document.getElementById("wishText");
     const newWishBtn = document.getElementById("newWishBtn");
 
-    if (!wishText || !newWishBtn) {
-        console.log("Không tìm thấy phần tử lời chúc");
-        return;
-    }
+    if (!wishText || !newWishBtn) return;
 
     newWishBtn.addEventListener("click", function() {
         const randomIndex = Math.floor(Math.random() * wishes.length);
-
         wishText.style.opacity = "0";
         wishText.style.transform = "translateY(20px)";
-
         setTimeout(() => {
             wishText.textContent = wishes[randomIndex];
             wishText.style.opacity = "1";
             wishText.style.transform = "translateY(0)";
         }, 300);
-
-        createFireworks(1);
+        createFireworks(3);
     });
 }
 
@@ -635,11 +646,11 @@ function createFirework(x, y, color) {
     firework.style.backgroundColor = color || getRandomColor();
     document.body.appendChild(firework);
 
-    const size = Math.random() * 8 + 4;
+    const size = Math.random() * 10 + 5;
     firework.style.width = size + "px";
     firework.style.height = size + "px";
 
-    const particles = Math.floor(Math.random() * 4) + 3;
+    const particles = Math.floor(Math.random() * 6) + 5;
     for (let i = 0; i < particles; i++) {
         setTimeout(() => {
             const particle = document.createElement("div");
@@ -650,61 +661,37 @@ function createFirework(x, y, color) {
             document.body.appendChild(particle);
 
             const angle = (Math.PI * 2 * i) / particles;
-            const distance = Math.random() * 60 + 30;
+            const distance = Math.random() * 80 + 40;
             const targetX = x + Math.cos(angle) * distance;
             const targetY = y + Math.sin(angle) * distance;
 
-            const anim = particle.animate(
-                [{
-                        transform: "scale(1)",
-                        opacity: 1,
-                    },
-                    {
-                        transform: `translate(${targetX - x}px, ${targetY - y}px) scale(0)`,
-                        opacity: 0,
-                    },
-                ], {
-                    duration: Math.random() * 600 + 500,
-                    easing: "cubic-bezier(0.1, 0.8, 0.9, 0.1)",
-                },
-            );
-
-            anim.onfinish = () => {
-                if (particle.parentNode) {
-                    particle.remove();
-                }
-            };
-        }, i * 50);
+            particle.animate(
+                [
+                    { transform: "scale(1)", opacity: 1 },
+                    { transform: `translate(${targetX - x}px, ${targetY - y}px) scale(0)`, opacity: 0 }
+                ], { duration: Math.random() * 600 + 500, easing: "cubic-bezier(0.1, 0.8, 0.9, 0.1)" }
+            ).onfinish = () => { if (particle.parentNode) particle.remove(); };
+        }, i * 60);
     }
 
-    setTimeout(() => {
-        if (firework.parentNode) {
-            firework.remove();
-        }
-    }, 500);
+    setTimeout(() => { if (firework.parentNode) firework.remove(); }, 500);
 }
 
 function createFireworks(count) {
     for (let i = 0; i < count; i++) {
-        setTimeout(() => {
-            createFirework();
-        }, i * 150);
+        setTimeout(() => { createFirework(); }, i * 120);
     }
 }
 
 function getRandomColor() {
-    const colors = ["#c41e3a", "#ffd700", "#ff4500", "#32cd32", "#1e90ff", "#9370db", "#ff69b4"];
+    const colors = ["#c41e3a", "#ffd700", "#ff4500", "#32cd32", "#1e90ff", "#9370db", "#ff69b4", "#ff8c00", "#dc143c", "#00ced1"];
     return colors[Math.floor(Math.random() * colors.length)];
 }
 
 // ========== SCROLL TO TOP ==========
 function initScroll() {
     const scrollTopBtn = document.getElementById("scrollTop");
-
-    if (!scrollTopBtn) {
-        console.log("Không tìm thấy nút scroll top");
-        return;
-    }
+    if (!scrollTopBtn) return;
 
     window.addEventListener("scroll", function() {
         if (window.pageYOffset > 300) {
@@ -715,18 +702,71 @@ function initScroll() {
     });
 
     scrollTopBtn.addEventListener("click", function() {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-        });
-        createFireworks(1);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        createFireworks(2);
     });
+}
+
+// ========== THÊM CSS ĐỘNG ==========
+function addDynamicCSS() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes rainbowBackground {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        .confetti {
+            position: fixed; top: 0; z-index: 9999; pointer-events: none;
+            border-radius: 2px;
+        }
+        .firework {
+            position: fixed; pointer-events: none; border-radius: 50%;
+            z-index: 9998; box-shadow: 0 0 10px currentColor;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ========== HÀM TEST TẾT ĐẾN ==========
+function testTetArrival() {
+    console.log("⚠️ ĐANG TEST CHẾ ĐỘ TẾT ĐẾN ⚠️");
+    window.testTetDate = new Date();
+    window.testTetDate.setSeconds(window.testTetDate.getSeconds() + 1);
+    console.log("🎆 Tết sẽ đến sau 1 giây! Chuẩn bị xem pháo hoa và nghe nhạc! 🎆");
+}
+
+// ========== HÀM TEST NHẠC TẾT ==========
+function testTetMusic() {
+    console.log("🎵 Đang test nhạc Tết...");
+    playTetMusic();
+}
+
+// ========== HÀM ĐIỀU CHỈNH ÂM LƯỢNG ==========
+function setVolume50() {
+    setMusicVolume(0.5);
+    console.log("🔊 Âm lượng 50%");
+}
+
+function setVolume70() {
+    setMusicVolume(0.7);
+    console.log("🔊 Âm lượng 70%");
+}
+
+function setVolume100() {
+    setMusicVolume(1.0);
+    console.log("🔊 Âm lượng 100%");
 }
 
 // ========== CLEANUP KHI ĐÓNG TRANG ==========
 window.addEventListener('beforeunload', function() {
     if (fireworksInterval) clearInterval(fireworksInterval);
     if (confettiInterval) clearInterval(confettiInterval);
+    stopTetMusic();
 });
 
 // ========== XỬ LÝ LỖI TỔNG QUÁT ==========
